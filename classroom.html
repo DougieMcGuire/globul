@@ -9,9 +9,21 @@
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #f5f5f5;
+            display: flex;
             height: 100vh;
+        }
+        .panel {
+            flex: 1;
             display: flex;
             flex-direction: column;
+            border-right: 1px solid #ddd;
+        }
+        .panel:last-child { border-right: none; }
+        .panel-header {
+            padding: 15px;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
         }
         #chat {
             flex: 1;
@@ -27,6 +39,7 @@
             border-radius: 18px;
             line-height: 1.4;
             word-wrap: break-word;
+            white-space: pre-wrap;
         }
         .user {
             align-self: flex-end;
@@ -39,61 +52,177 @@
             color: black;
             border: 1px solid #e0e0e0;
         }
-        #input-area {
+        .input-area {
             padding: 15px;
             background: white;
             border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 10px;
         }
-        #input {
-            flex: 1;
+        input[type="text"], textarea {
+            width: 100%;
             padding: 10px 15px;
             border: 1px solid #ddd;
-            border-radius: 20px;
+            border-radius: 8px;
             font-size: 15px;
             outline: none;
+            font-family: inherit;
+            margin-bottom: 10px;
         }
-        #send {
-            padding: 10px 25px;
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
             background: #007aff;
             color: white;
             border: none;
-            border-radius: 20px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 15px;
+            margin-bottom: 10px;
         }
-        #send:disabled {
+        button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+        .slider-container {
+            margin-bottom: 15px;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #666;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        #humanized-output {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            min-height: 150px;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        .humanizer-content {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            flex: 1;
+            overflow: hidden;
         }
     </style>
 </head>
 <body>
-    <div id="chat"></div>
-    <div id="input-area">
-        <input type="text" id="input" placeholder="Type a message..." />
-        <button id="send">Send</button>
+    <div class="panel">
+        <div class="panel-header">Chat</div>
+        <div id="chat"></div>
+        <div class="input-area">
+            <input type="text" id="input" placeholder="Type a message..." />
+            <button id="send">Send</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">Text Humanizer</div>
+        <div class="humanizer-content">
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Humanization Level</span>
+                    <span id="level-value">5</span>
+                </div>
+                <input type="range" id="humanize-level" min="1" max="10" value="5">
+            </div>
+            <textarea id="text-input" placeholder="Paste text here to humanize..."></textarea>
+            <button id="humanize-btn">Humanize Text</button>
+            <div id="humanized-output"></div>
+        </div>
     </div>
 
     <script>
         const chat = document.getElementById('chat');
         const input = document.getElementById('input');
         const sendBtn = document.getElementById('send');
+        const textInput = document.getElementById('text-input');
+        const humanizeBtn = document.getElementById('humanize-btn');
+        const humanizeLevel = document.getElementById('humanize-level');
+        const levelValue = document.getElementById('level-value');
+        const humanizedOutput = document.getElementById('humanized-output');
         let history = [];
 
-        const systemPrompt = `You're having a natural conversation. Write like you're texting a friend - casual, authentic, with real personality. Mix up your sentence structures, use contractions naturally, and don't be afraid to rephrase or add "um" or "actually" occasionally. Sometimes acknowledge uncertainty or think things through out loud. Keep it real and conversational, not robotic or overly structured. Show genuine engagement and maintain your consistent voice throughout.`;
+        humanizeLevel.oninput = (e) => {
+            levelValue.textContent = e.target.value;
+        };
 
-        function addMessage(role, content) {
-            const div = document.createElement('div');
-            div.className = `msg ${role}`;
-            div.textContent = content;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
+        function getSystemPrompt(level = 5) {
+            const levels = {
+                1: "You are helpful and conversational. Write naturally with some casual language.",
+                3: "Write like a real person texting. Use contractions, be casual but clear. Mix up your sentence starts.",
+                5: "Have a genuine conversation like texting a friend. Use casual language, contractions everywhere, varied sentences. Add personality, sometimes say um or well, rephrase thoughts mid sentence. Be real and authentic, not polished or formal.",
+                7: "Write exactly how people actually talk and text. Super casual with tons of contractions, sentence fragments, starting sentences with and or but, using like and you know naturally. Add filler words, backtrack on thoughts, be imperfect. Make it feel totally human with all the quirks and natural flow of real conversation.",
+                10: "Write like someone genuinely typing their thoughts in real time. Maximum natural human style with all imperfections, casual slang, tons of contractions, fragments, run ons, starting thoughts then changing direction, filler words everywhere, rhetorical questions, personal asides, tangents. Use like, actually, honestly, you know what I mean. Sometimes use lowercase, drop punctuation where it feels natural. Be super conversational and authentic with zero AI patterns or formality."
+            };
+
+            const exactLevel = parseInt(level);
+            if (levels[exactLevel]) return levels[exactLevel];
+
+            const below = Math.floor(exactLevel / 2) * 2 + 1;
+            const above = below + 2;
+            return levels[below] || levels[5];
         }
 
-        function buildPrompt(userMsg) {
-            let prompt = systemPrompt + "\n\n";
+        function addVariation(text, level) {
+            let result = text;
+            
+            const variations = [
+                [/\bI am\b/gi, ["I'm", "im"]],
+                [/\byou are\b/gi, ["you're", "youre"]],
+                [/\bdo not\b/gi, ["don't", "dont"]],
+                [/\bcannot\b/gi, ["can't", "cant"]],
+                [/\bwill not\b/gi, ["won't", "wont"]],
+                [/\bit is\b/gi, ["it's", "its"]],
+                [/\bthat is\b/gi, ["that's", "thats"]],
+                [/\bwould\b/gi, ["would", "would", "would", "wouldve", "would've"]],
+                [/\bshould\b/gi, ["should", "should", "shouldve", "should've"]],
+            ];
+
+            if (level >= 5) {
+                for (let [pattern, replacements] of variations) {
+                    result = result.replace(pattern, () => {
+                        return replacements[Math.floor(Math.random() * replacements.length)];
+                    });
+                }
+            }
+
+            if (level >= 7) {
+                const fillers = ["like", "you know", "honestly", "actually", "um", "well"];
+                const sentences = result.split('. ');
+                result = sentences.map((s, i) => {
+                    if (Math.random() > 0.6 && i > 0) {
+                        const filler = fillers[Math.floor(Math.random() * fillers.length)];
+                        return filler + ' ' + s.charAt(0).toLowerCase() + s.slice(1);
+                    }
+                    return s;
+                }).join('. ');
+            }
+
+            if (level >= 8) {
+                result = result.replace(/\./g, () => Math.random() > 0.7 ? '...' : '.');
+            }
+
+            return result;
+        }
+
+        function buildPrompt(userMsg, level = 5) {
+            let prompt = getSystemPrompt(level) + "\n\n";
             
             for (let msg of history) {
                 if (msg.role === 'user') {
@@ -107,6 +236,14 @@
             return prompt;
         }
 
+        function addMessage(role, content) {
+            const div = document.createElement('div');
+            div.className = `msg ${role}`;
+            div.textContent = content;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
         async function sendMessage() {
             const msg = input.value.trim();
             if (!msg) return;
@@ -116,7 +253,7 @@
             addMessage('user', msg);
 
             try {
-                const fullPrompt = buildPrompt(msg);
+                const fullPrompt = buildPrompt(msg, 5);
                 const encodedPrompt = encodeURIComponent(fullPrompt);
                 const seed = Math.floor(Math.random() * 1000000);
                 
@@ -125,23 +262,75 @@
                 const res = await fetch(url);
                 const data = await res.text();
                 
-                history.push({ role: 'user', content: msg });
-                history.push({ role: 'assistant', content: data });
+                try {
+                    const parsed = JSON.parse(data);
+                    if (parsed.refusal !== undefined && parsed.refusal !== null) {
+                        addMessage('assistant', 'ok so basically you put sum in thats bad');
+                        history.push({ role: 'user', content: msg });
+                        history.push({ role: 'assistant', content: 'ok so basically you put sum in thats bad' });
+                        sendBtn.disabled = false;
+                        input.focus();
+                        return;
+                    }
+                } catch (e) {}
                 
-                addMessage('assistant', data);
+                const humanized = addVariation(data, 5);
+                
+                history.push({ role: 'user', content: msg });
+                history.push({ role: 'assistant', content: humanized });
+                
+                addMessage('assistant', humanized);
 
             } catch (err) {
-                addMessage('assistant', 'Sorry, something went wrong. Try again?');
+                addMessage('assistant', 'sorry that didnt work');
             }
 
             sendBtn.disabled = false;
             input.focus();
         }
 
+        async function humanizeText() {
+            const text = textInput.value.trim();
+            if (!text) return;
+
+            humanizeBtn.disabled = true;
+            humanizedOutput.textContent = 'Processing...';
+
+            try {
+                const level = parseInt(humanizeLevel.value);
+                const prompt = `${getSystemPrompt(level)}\n\nRewrite this text in a natural human way:\n\n${text}\n\nRewritten version:`;
+                const encodedPrompt = encodeURIComponent(prompt);
+                const seed = Math.floor(Math.random() * 1000000);
+                
+                const url = `https://text.pollinations.ai/${encodedPrompt}?seed=${seed}&model=openai`;
+                
+                const res = await fetch(url);
+                const data = await res.text();
+
+                try {
+                    const parsed = JSON.parse(data);
+                    if (parsed.refusal !== undefined && parsed.refusal !== null) {
+                        humanizedOutput.textContent = 'ok so basically you put sum in thats bad';
+                        humanizeBtn.disabled = false;
+                        return;
+                    }
+                } catch (e) {}
+                
+                const humanized = addVariation(data, level);
+                humanizedOutput.textContent = humanized;
+
+            } catch (err) {
+                humanizedOutput.textContent = 'sorry that didnt work';
+            }
+
+            humanizeBtn.disabled = false;
+        }
+
         sendBtn.onclick = sendMessage;
         input.onkeypress = (e) => {
             if (e.key === 'Enter') sendMessage();
         };
+        humanizeBtn.onclick = humanizeText;
     </script>
 </body>
 </html>
