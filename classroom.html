@@ -164,60 +164,171 @@
 
         function getSystemPrompt(level = 5) {
             const levels = {
-                1: "You are helpful and conversational. Write naturally with some casual language.",
-                3: "Write like a real person texting. Use contractions, be casual but clear. Mix up your sentence starts.",
-                5: "Have a genuine conversation like texting a friend. Use casual language, contractions everywhere, varied sentences. Add personality, sometimes say um or well, rephrase thoughts mid sentence. Be real and authentic, not polished or formal.",
-                7: "Write exactly how people actually talk and text. Super casual with tons of contractions, sentence fragments, starting sentences with and or but, using like and you know naturally. Add filler words, backtrack on thoughts, be imperfect. Make it feel totally human with all the quirks and natural flow of real conversation.",
-                10: "Write like someone genuinely typing their thoughts in real time. Maximum natural human style with all imperfections, casual slang, tons of contractions, fragments, run ons, starting thoughts then changing direction, filler words everywhere, rhetorical questions, personal asides, tangents. Use like, actually, honestly, you know what I mean. Sometimes use lowercase, drop punctuation where it feels natural. Be super conversational and authentic with zero AI patterns or formality."
+                1: "Write naturally and conversationally. Use some casual language and contractions.",
+                3: "Write like youre texting someone smart. Be casual, use contractions, mix up how you start sentences. Real but clear.",
+                5: "Talk like a real person writing an essay or explanation. Use contractions everywhere, vary your sentences a lot, add personality. Sometimes throw in a you know or honestly or actually. Dont be too polished, let it flow naturally. Use some sentence fragments where it feels right. Start some sentences with And or But. Be authentic.",
+                7: "Write exactly how someone would if they were typing their thoughts naturally. Super casual, tons of contractions, fragments, starting with conjunctions, using filler words like honestly actually you know what i mean. Mix long and short sentences randomly. Add personal asides. Rephrase things mid thought. Use rhetorical questions sometimes. Let the writing breathe and feel imperfect.",
+                10: "Maximum human style. Write like someone genuinely typing out their thoughts in real time with zero AI polish. Use tons of contractions, fragments everywhere, run ons, sentences starting with And But Or So. Throw in filler words naturally like honestly tbh actually you know i mean. Use casual phrasing, sometimes drop punctuation where it feels natural, mix up capitalization occasionally if it fits the vibe. Add tangents, backtrack on thoughts, use dashes and ellipses. Personal voice throughout. Make it messy and real and totally human. No perfect structure or AI patterns. Think stream of consciousness but coherent enough to follow."
             };
 
             const exactLevel = parseInt(level);
             if (levels[exactLevel]) return levels[exactLevel];
-
-            const below = Math.floor(exactLevel / 2) * 2 + 1;
-            const above = below + 2;
-            return levels[below] || levels[5];
+            return levels[5];
         }
 
-        function addVariation(text, level) {
+        function getHumanizePrompt(level) {
+            const basePrompt = `Rewrite this text to sound completely human written. Critical rules:
+
+1. ELIMINATE AI PATTERNS:
+   - No perfectly balanced sentences or parallel structures
+   - No overly smooth transitions
+   - No repeated sentence patterns (like starting multiple sentences the same way)
+   - No formulaic opening/closing statements
+   - Break up any rhythmic or sing-song quality
+   
+2. ADD HUMAN IMPERFECTIONS:
+   - Mix sentence lengths randomly (some very short, some running on)
+   - Use fragments where natural
+   - Start sentences with And, But, So, Or when it flows
+   - Add filler words: honestly, actually, like, you know, I mean, basically
+   - Include personal asides and tangents
+   - Use casual phrasing and contractions everywhere
+   - Throw in rhetorical questions
+   
+3. VARY STRUCTURE:
+   - No consistent paragraph lengths
+   - Break conventional grammar rules when it sounds more natural
+   - Use dashes, ellipses, parentheses for asides
+   - Mix formal and casual language within the same piece
+   - Let ideas flow messily rather than in perfect order
+   
+4. ADD VOICE:
+   - Include personal observations
+   - Show uncertainty or hedging (maybe, probably, I think, seems like)
+   - Use qualifiers and softeners
+   - Add emphasis naturally (really, super, totally)
+   - Let personality come through
+
+Level ${level} intensity. `;
+
+            if (level <= 3) {
+                return basePrompt + "Keep it mostly clear but add natural variations and break AI patterns.";
+            } else if (level <= 6) {
+                return basePrompt + "Make it genuinely conversational with noticeable human quirks and imperfections.";
+            } else {
+                return basePrompt + "Go maximum natural human style. Make it impossible to detect as AI. Add tons of natural imperfections, casual language, varied structure, personal voice. Think how someone actually writes, not how AI writes.";
+            }
+        }
+
+        function postProcessText(text, level) {
             let result = text;
             
-            const variations = [
-                [/\bI am\b/gi, ["I'm", "im"]],
-                [/\byou are\b/gi, ["you're", "youre"]],
-                [/\bdo not\b/gi, ["don't", "dont"]],
-                [/\bcannot\b/gi, ["can't", "cant"]],
-                [/\bwill not\b/gi, ["won't", "wont"]],
-                [/\bit is\b/gi, ["it's", "its"]],
-                [/\bthat is\b/gi, ["that's", "thats"]],
-                [/\bwould\b/gi, ["would", "would", "would", "wouldve", "would've"]],
-                [/\bshould\b/gi, ["should", "should", "shouldve", "should've"]],
+            // Remove common AI phrases
+            const aiPhrases = [
+                /\bIn conclusion,?\b/gi,
+                /\bIn summary,?\b/gi,
+                /\bTo summarize,?\b/gi,
+                /\bIt is important to note that\b/gi,
+                /\bIt should be noted that\b/gi,
+                /\bNotably,?\b/gi,
+                /\bCrucially,?\b/gi,
+                /\bSignificantly,?\b/gi,
+                /\bUltimately,?\b/gi,
+                /\bdelve into\b/gi,
+                /\bdelves into\b/gi,
+                /\btestament to\b/gi,
+                /\bIt is worth noting\b/gi,
+                /\bserves as a reminder\b/gi
             ];
 
-            if (level >= 5) {
-                for (let [pattern, replacements] of variations) {
-                    result = result.replace(pattern, () => {
-                        return replacements[Math.floor(Math.random() * replacements.length)];
-                    });
+            for (let phrase of aiPhrases) {
+                result = result.replace(phrase, '');
+            }
+
+            // Add contractions aggressively
+            const contractions = [
+                [/\bI am\b/g, "I'm"],
+                [/\byou are\b/g, "you're"],
+                [/\bwe are\b/g, "we're"],
+                [/\bthey are\b/g, "they're"],
+                [/\bhe is\b/g, "he's"],
+                [/\bshe is\b/g, "she's"],
+                [/\bit is\b/g, "it's"],
+                [/\bthat is\b/g, "that's"],
+                [/\bwho is\b/g, "who's"],
+                [/\bwhat is\b/g, "what's"],
+                [/\bdo not\b/g, "don't"],
+                [/\bdoes not\b/g, "doesn't"],
+                [/\bdid not\b/g, "didn't"],
+                [/\bcannot\b/g, "can't"],
+                [/\bcould not\b/g, "couldn't"],
+                [/\bwould not\b/g, "wouldn't"],
+                [/\bshould not\b/g, "shouldn't"],
+                [/\bwill not\b/g, "won't"],
+                [/\bhave not\b/g, "haven't"],
+                [/\bhas not\b/g, "hasn't"],
+                [/\bhad not\b/g, "hadn't"],
+                [/\bis not\b/g, "isn't"],
+                [/\bwas not\b/g, "wasn't"],
+                [/\bwere not\b/g, "weren't"],
+                [/\bI would\b/g, "I'd"],
+                [/\byou would\b/g, "you'd"],
+                [/\bhe would\b/g, "he'd"],
+                [/\bshe would\b/g, "she'd"],
+                [/\bwe would\b/g, "we'd"],
+                [/\bthey would\b/g, "they'd"],
+                [/\bI have\b/g, "I've"],
+                [/\byou have\b/g, "you've"],
+                [/\bwe have\b/g, "we've"],
+                [/\bthey have\b/g, "they've"],
+                [/\bwho have\b/g, "who've"]
+            ];
+
+            if (level >= 3) {
+                for (let [pattern, replacement] of contractions) {
+                    result = result.replace(pattern, replacement);
                 }
             }
 
-            if (level >= 7) {
-                const fillers = ["like", "you know", "honestly", "actually", "um", "well"];
-                const sentences = result.split('. ');
+            // Add filler words at higher levels
+            if (level >= 5) {
+                const sentences = result.split(/\. (?=[A-Z])/);
                 result = sentences.map((s, i) => {
-                    if (Math.random() > 0.6 && i > 0) {
+                    const rand = Math.random();
+                    if (rand > 0.7 && i > 0) {
+                        const fillers = ['honestly', 'actually', 'you know', 'i mean', 'like', 'basically', 'really', 'probably'];
                         const filler = fillers[Math.floor(Math.random() * fillers.length)];
-                        return filler + ' ' + s.charAt(0).toLowerCase() + s.slice(1);
+                        return filler + ', ' + s.charAt(0).toLowerCase() + s.slice(1);
+                    } else if (rand > 0.85 && i > 0) {
+                        const starts = ['and ', 'but ', 'so '];
+                        const start = starts[Math.floor(Math.random() * starts.length)];
+                        return start + s.charAt(0).toLowerCase() + s.slice(1);
                     }
                     return s;
                 }).join('. ');
             }
 
-            if (level >= 8) {
-                result = result.replace(/\./g, () => Math.random() > 0.7 ? '...' : '.');
+            // Vary punctuation at high levels
+            if (level >= 7) {
+                result = result.replace(/\. /g, () => {
+                    const rand = Math.random();
+                    if (rand > 0.85) return '... ';
+                    if (rand > 0.75) return ' - ';
+                    return '. ';
+                });
+
+                // Occasionally lowercase after periods for casual feel
+                result = result.replace(/\. ([A-Z])/g, (match, letter) => {
+                    if (Math.random() > 0.9) {
+                        return '. ' + letter.toLowerCase();
+                    }
+                    return match;
+                });
             }
 
+            // Clean up extra spaces
+            result = result.replace(/ +/g, ' ').trim();
+            
             return result;
         }
 
@@ -274,7 +385,7 @@
                     }
                 } catch (e) {}
                 
-                const humanized = addVariation(data, 5);
+                const humanized = postProcessText(data, 5);
                 
                 history.push({ role: 'user', content: msg });
                 history.push({ role: 'assistant', content: humanized });
@@ -298,7 +409,7 @@
 
             try {
                 const level = parseInt(humanizeLevel.value);
-                const prompt = `${getSystemPrompt(level)}\n\nRewrite this text in a natural human way:\n\n${text}\n\nRewritten version:`;
+                const prompt = getHumanizePrompt(level) + `\n\nOriginal text:\n${text}\n\nHumanized version:`;
                 const encodedPrompt = encodeURIComponent(prompt);
                 const seed = Math.floor(Math.random() * 1000000);
                 
@@ -316,7 +427,7 @@
                     }
                 } catch (e) {}
                 
-                const humanized = addVariation(data, level);
+                const humanized = postProcessText(data, level);
                 humanizedOutput.textContent = humanized;
 
             } catch (err) {
