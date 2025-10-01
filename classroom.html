@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Classroom — Unofficial Demo</title>
+<style>
+  /* Google-like Classroom: unofficial demo styling */
+  :root{
+    --gc-green:#1e8e3e;
+    --bg:#f1f3f4;
+    --card:#ffffff;
+    --muted:#5f6368;
+    --shadow: 0 2px 6px rgba(60,64,67,0.12);
+    --radius:12px;
+    --maxw:1000px;
+    --imperfect-opacity:0.95;
+  }
+
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: "Google Sans", Roboto, Arial, Helvetica, sans-serif;
+    background:var(--bg);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    display:flex;
+    justify-content:center;
+    padding:28px;
+  }
+
+  .shell{
+    width:100%;
+    max-width:var(--maxw);
+    display:grid;
+    grid-template-columns: 280px 1fr;
+    gap:20px;
+  }
+
+  /* left nav */
+  .left{
+    background: transparent;
+  }
+
+  .class-card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:16px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+
+  .logo {
+    width:56px;height:56px;border-radius:10px;
+    background:linear-gradient(180deg,#23863a,#1b6f31);
+    display:flex;align-items:center;justify-content:center;
+    color:white;font-weight:700;font-size:22px;flex-shrink:0;
+    box-shadow:0 1px 3px rgba(0,0,0,0.12);
+  }
+
+  .class-info{
+    display:flex;flex-direction:column;
+  }
+  .class-title{ font-size:16px; font-weight:600; color:#202124; }
+  .class-sub{ font-size:13px; color:var(--muted); margin-top:4px; }
+
+  .header{
+    grid-column:1/-1;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:var(--card);
+    padding:12px 18px;
+    border-radius:12px;
+    box-shadow:var(--shadow);
+  }
+
+  .header-left{display:flex;gap:12px;align-items:center;}
+  .brand{
+    display:flex;gap:10px;align-items:center;
+  }
+  .brand .logo-sm{
+    width:36px;height:36px;border-radius:8px;
+    background:linear-gradient(180deg,#23863a,#1b6f31);
+    display:flex;align-items:center;justify-content:center;color:white;font-weight:700;
+  }
+  .brand .title{ font-weight:600; font-size:15px; color:#202124;}
+  .badge{ font-size:12px;color:var(--muted); background:#f1f3f4;padding:6px 8px;border-radius:999px; }
+
+  /* main: stream */
+  .stream{
+    background:transparent;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .compose{
+    background:var(--card);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    padding:14px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .compose .avatar{
+    width:40px;height:40px;border-radius:50%;background:#c8e6c9;display:flex;align-items:center;justify-content:center;font-weight:700;color:#1e8e3e;
+  }
+  .compose .form{
+    flex:1; display:flex; flex-direction:column; gap:10px;
+  }
+  .compose input[type="text"]{
+    width:100%; padding:10px 12px;border-radius:8px;border:1px solid #e0e0e0;font-size:14px;
+    outline:none;
+  }
+  .compose .row{ display:flex; gap:8px; justify-content:flex-end; align-items:center;}
+  .btn-post{
+    background:var(--gc-green); color:white;border:none;border-radius:20px;padding:8px 14px;font-weight:600;cursor:pointer;
+  }
+
+  /* posts */
+  .post{
+    background:var(--card);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    padding:14px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .post .avatar{
+    width:44px;height:44px;border-radius:50%;background:#e8f5e9;display:flex;align-items:center;justify-content:center;font-weight:700;color:#1e8e3e;
+  }
+  .post .meta{ display:flex; flex-direction:column; gap:6px; flex:1;}
+  .post .meta .who{ font-weight:600; color:#202124; font-size:14px;}
+  .post .meta .when{ font-size:12px; color:var(--muted); }
+  .post .content{ font-size:14px; color:#202124; margin-top:6px; white-space:pre-wrap; line-height:1.4;}
+  .post .actions{ margin-top:10px; display:flex; gap:12px; color:var(--muted); font-size:13px;}
+
+  /* footer / misc */
+  .muted { color:var(--muted); font-size:13px; }
+  .small { font-size:12px; color:var(--muted); }
+
+  /* responsive */
+  @media (max-width:880px){
+    .shell{ grid-template-columns: 1fr; padding:0 8px; }
+    .left{ order:2; }
+    .stream{ order:1; }
+    .header{ flex-direction:column; gap:8px; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <!-- header -->
+    <div class="header">
+      <div class="header-left">
+        <div class="brand">
+          <!-- simple svg badge (not Google logo) -->
+          <div class="logo-sm" aria-hidden="true">GC</div>
+          <div>
+            <div class="title">Classroom <span style="font-weight:600;color:#1e8e3e;margin-left:8px;font-size:12px">UNOFFICIAL DEMO</span></div>
+            <div class="small">Demo — not affiliated with Google</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right" style="display:flex;gap:12px;align-items:center">
+        <div class="badge">Stream</div>
+        <div class="small">You are signed in as <strong>student.demo@example.com</strong></div>
+      </div>
+    </div>
+
+    <!-- left column (class info) -->
+    <div class="left">
+      <div class="class-card" style="margin-bottom:12px;">
+        <div class="logo">GC</div>
+        <div class="class-info">
+          <div class="class-title">Intro to Widgets</div>
+          <div class="class-sub">Mrs. Example · Class code: <strong>ABCD123</strong></div>
+        </div>
+      </div>
+
+      <div class="class-card" style="margin-top:6px;padding:12px;">
+        <div style="font-weight:600;margin-bottom:8px;">About</div>
+        <div class="small">This is an unofficial demo UI that mimics the feel of Classroom for prototyping.</div>
+      </div>
+    </div>
+
+    <!-- stream -->
+    <div class="stream">
+      <!-- compose -->
+      <div class="compose" id="composeBox">
+        <div class="avatar">S</div>
+        <div class="form">
+          <input id="composeInput" type="text" placeholder="Announce something to your class..." />
+          <div class="row">
+            <div class="muted">Anyone in the class</div>
+            <button class="btn-post" id="postBtn">Post</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- posts container -->
+      <div id="postsContainer"></div>
+
+      <!-- small help -->
+      <div style="margin-top:8px;" class="muted">Tip: press Enter to post. This is an <strong>unofficial demo</strong>.</div>
+    </div>
+  </div>
+
+<script>
+/* -------------------------
+   Configuration
+   ------------------------- */
+const IMPERFECTION_LEVEL = 0.12; // 0 = perfect, 0.2 = gentle imperfections (you asked for less randomness)
+const POLLINATIONS_BASE = 'https://text.pollinations.ai/'; // GET API
+const FALLBACK_RESPONSES = [
+  "hey, got that! i'll get back later..",
+  "ok noted. thanks!",
+  "right, on it.",
+  "cool — gotcha."
+];
+
+/* -------------------------
+   Utilities: time formatting
+   ------------------------- */
+function timeNowText(){
+  const d = new Date();
+  return d.toLocaleString();
+}
+
+/* -------------------------
+   Gentle imperfect humanizer
+   - only small probability of applying each tweak
+   - keeps readability mostly intact
+   ------------------------- */
+function gentleImperfect(text){
+  let t = text || "";
+
+  // small chance to lowercase isolated I
+  if(Math.random() < IMPERFECTION_LEVEL * 0.6){
+    t = t.replace(/\bI\b/g, 'i');
+  }
+
+  // small chance to drop a contraction apostrophe on n't or 're / 's
+  if(Math.random() < IMPERFECTION_LEVEL * 0.4){
+    t = t.replace(/\b(can|do|did|is|are|was|have|has|would|could|should)n't\b/gi, (m)=> m.replace(/'/g,''));
+    t = t.replace(/\b(you|it|that|there)\'s\b/gi, (m)=> m.replace(/'/g,''));
+  }
+
+  // small chance to append a soft filler like "…", or "okay"
+  if(Math.random() < IMPERFECTION_LEVEL * 0.5){
+    const fillers = ['...', ' — okay?', ' ;)', ' hmm'];
+    t = t + fillers[Math.floor(Math.random()*fillers.length)];
+  }
+
+  // small chance to introduce a very minor misspelling
+  if(Math.random() < IMPERFECTION_LEVEL * 0.25){
+    const mistakes = [
+      ['because','becuase'],
+      ['receive','recieve'],
+      ['definitely','definately'],
+      ['tomorrow','tommorow'],
+      ['student','studnet']
+    ];
+    const [correct,wrong] = mistakes[Math.floor(Math.random()*mistakes.length)];
+    t = t.replace(new RegExp('\\b'+correct+'\\b','gi'), wrong);
+  }
+
+  // small chance to make punctuation slightly off
+  if(Math.random() < IMPERFECTION_LEVEL * 0.2){
+    t = t.replace(/\.\s*$/,'..');
+  }
+
+  return t;
+}
+
+/* -------------------------
+   DOM helpers for posts
+   ------------------------- */
+const postsContainer = document.getElementById('postsContainer');
+
+function addPost({author='Classroom Bot', avatar='B', time=null, text='(no content)' }){
+  const post = document.createElement('div');
+  post.className = 'post';
+  const av = document.createElement('div');
+  av.className = 'avatar';
+  av.textContent = avatar;
+
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  const who = document.createElement('div');
+  who.className = 'who';
+  who.textContent = author;
+  const when = document.createElement('div');
+  when.className = 'when';
+  when.textContent = time || timeNowText();
+
+  const content = document.createElement('div');
+  content.className = 'content';
+  content.textContent = text;
+
+  const actions = document.createElement('div');
+  actions.className = 'actions';
+  actions.innerHTML = '<span>Comment</span><span>Share</span>';
+
+  meta.appendChild(who);
+  meta.appendChild(when);
+  meta.appendChild(content);
+  meta.appendChild(actions);
+
+  post.appendChild(av);
+  post.appendChild(meta);
+
+  postsContainer.prepend(post);
+}
+
+/* -------------------------
+   Pollinations GET fetch with safe fallback
+   ------------------------- */
+async function fetchPollinations(prompt){
+  try{
+    const url = POLLINATIONS_BASE + encodeURIComponent(prompt);
+    const resp = await fetch(url, { method:'GET' });
+    if(!resp.ok) throw new Error('non-200');
+    const txt = await resp.text();
+    // Pollinations sometimes returns empty or weird strings; guard a bit
+    if(!txt || txt.trim().length < 2) throw new Error('short response');
+    return txt;
+  }catch(err){
+    // Fall back to a random canned response
+    return FALLBACK_RESPONSES[Math.floor(Math.random()*FALLBACK_RESPONSES.length)];
+  }
+}
+
+/* -------------------------
+   Post flow: send prompt, get bot text, humanize gently, add to stream
+   ------------------------- */
+const postBtn = document.getElementById('postBtn');
+const composeInput = document.getElementById('composeInput');
+
+async function handlePost(){
+  const prompt = composeInput.value.trim();
+  if(!prompt) return;
+  // add user's post visually first (like Classroom)
+  addPost({ author:'You', avatar:'S', text: prompt, time: timeNowText() });
+  composeInput.value = '';
+  postBtn.disabled = true;
+  postBtn.textContent = 'Posting...';
+
+  try{
+    // get AI reply (simulate teacher/assistant reply)
+    const aiRaw = await fetchPollinations(prompt);
+    const aiHuman = gentleImperfect(String(aiRaw));
+    // create a bot reply post (minor delay so it feels natural)
+    setTimeout(()=>{
+      addPost({ author: 'Classroom Assistant', avatar:'A', text: aiHuman, time: timeNowText() });
+    }, 500 + Math.random()*700);
+  }catch(e){
+    addPost({ author:'Classroom Assistant', avatar:'A', text: 'oops something up. try again', time:timeNowText() });
+  } finally {
+    postBtn.disabled = false;
+    postBtn.textContent = 'Post';
+    composeInput.focus();
+  }
+}
+
+postBtn.addEventListener('click', handlePost);
+composeInput.addEventListener('keypress', (e)=>{
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    handlePost();
+  }
+});
+
+/* Welcome example posts */
+addPost({ author:'Mrs. Example • Teacher', avatar:'M', text: "Welcome! Post any questions about the upcoming widget project here. i'll check in later.", time: timeNowText() });
+addPost({ author:'Classroom Assistant', avatar:'A', text: "hey! ask me anything about the assignment — i'll try to help.", time: timeNowText() });
+
+</script>
+</body>
+</html>
