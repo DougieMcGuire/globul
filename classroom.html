@@ -2,334 +2,311 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Classroom</title>
+    <link rel="icon" href="https://www.gstatic.com/classroom/logo_square_rounded.svg" type="image/svg+xml">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f5f5;
-            display: flex;
-            height: 100vh;
+        /* Global Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f3f4;
+            color: #202124;
         }
-        .panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #ddd;
-        }
-        .panel:last-child { border-right: none; }
-        .panel-header {
-            padding: 15px;
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
-            font-weight: 600;
-        }
-        #chat {
-            flex: 1;
-            overflow-y: auto;
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #ffffff;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
             padding: 20px;
+            overflow-y: auto;
+        }
+        .sidebar h2 {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #202124;
+        }
+        .sidebar a {
+            display: block;
+            padding: 10px;
+            margin-bottom: 5px;
+            color: #202124;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .sidebar a.active {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+        }
+        .sidebar a:hover {
+            background-color: #f1f3f4;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #dadce0;
+            margin: 15px 0;
+        }
+        /* Main Content */
+        .main {
+            margin-left: 270px;
+            padding: 20px;
+        }
+        /* Banner */
+        .banner {
+            height: 180px;
+            background-image: url('https://www.gstatic.com/classroom/themes/Honors.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            position: relative;
             display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .msg {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            line-height: 1.4;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-        }
-        .user {
-            align-self: flex-end;
-            background: #007aff;
+            align-items: center;
+            padding-left: 20px;
+            margin-bottom: 20px;
             color: white;
         }
-        .assistant {
-            align-self: flex-start;
-            background: white;
-            color: black;
-            border: 1px solid #e0e0e0;
+        .banner h1 {
+            font-size: 32px;
+            font-weight: 500;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
         }
-        .input-area {
+        /* Class Info */
+        .class-info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .box {
+            background-color: #ffffff;
             padding: 15px;
-            background: white;
-            border-top: 1px solid #e0e0e0;
+            border-radius: 10px;
+            flex: 1;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        input[type="text"], textarea {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
-            outline: none;
-            font-family: inherit;
-            margin-bottom: 10px;
+        .box strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #5f6368;
         }
-        textarea {
-            min-height: 150px;
-            resize: vertical;
+        .input-box {
+            display: flex;
+            align-items: center;
         }
-        button {
+        .input-box input {
             width: 100%;
             padding: 10px;
-            background: #007aff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-            margin-bottom: 10px;
+            border-radius: 20px;
+            border: 1px solid #dadce0;
+            outline: none;
+            font-size: 14px;
+            color: #202124;
         }
-        button:disabled {
+        .input-box button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .input-box button:hover {
+            background-color: #155ab6;
+        }
+        .input-box button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        .slider-container {
-            margin-bottom: 15px;
-        }
-        .slider-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 13px;
-            color: #666;
-        }
-        input[type="range"] {
-            width: 100%;
+        .box h3 {
+            margin-top: 0;
             margin-bottom: 10px;
+            font-size: 18px;
+            color: #202124;
         }
-        #humanized-output {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            min-height: 150px;
-            white-space: pre-wrap;
-            line-height: 1.5;
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 10px;
+        .box p {
+            color: #5f6368;
+            font-size: 14px;
         }
-        .humanizer-content {
+        /* Chat Stream */
+        #chat-stream {
             display: flex;
             flex-direction: column;
-            padding: 15px;
-            flex: 1;
-            overflow: hidden;
+            gap: 15px;
+            margin-top: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .msg {
+            padding: 12px 16px;
+            border-radius: 10px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            max-width: 70%;
+        }
+        .user {
+            align-self: flex-end;
+            background: #e8f0fe;
+            color: #1a73e8;
+            margin-left: auto;
+        }
+        .assistant {
+            align-self: flex-start;
+            background: #f1f3f4;
+            color: #202124;
         }
     </style>
 </head>
 <body>
-    <div class="panel">
-        <div class="panel-header">Chat</div>
-        <div id="chat"></div>
-        <div class="input-area">
-            <input type="text" id="input" placeholder="Type a message..." />
-            <button id="send">Send</button>
-        </div>
+    <div class="sidebar">
+        <h2>Classes</h2>
+        <a href="#" class="active">Math 101</a>
+        <a href="#">History of Art</a>
+        <a href="#">Computer Science</a>
+        <a href="#">English Literature</a>
+        <a href="#">Physics Lab</a>
+        <hr>
+        <a href="#">Archived classes</a>
+        <a href="#">Settings</a>
     </div>
-
-    <div class="panel">
-        <div class="panel-header">Text Humanizer</div>
-        <div class="humanizer-content">
-            <div class="slider-container">
-                <div class="slider-label">
-                    <span>Humanization Level</span>
-                    <span id="level-value">5</span>
-                </div>
-                <input type="range" id="humanize-level" min="1" max="10" value="5">
+    <div class="main">
+        <div class="banner">
+            <h1>Google Classroom</h1>
+        </div>
+        <div class="class-info">
+            <div class="box">
+                <strong>Class code:</strong>
+                <p>totallyrealcodepleasebelive</p>
             </div>
-            <textarea id="text-input" placeholder="Paste text here to humanize..."></textarea>
-            <button id="humanize-btn">Humanize Text</button>
-            <div id="humanized-output"></div>
+            <div class="box input-box">
+                <input type="text" id="chat-input" placeholder="Ask the AI assistant anything...">
+                <button id="post-btn">Post</button>
+            </div>
+        </div>
+        <div class="box">
+            <h3>Class Stream</h3>
+            <p>Chat with the AI assistant below. Messages are humanized for natural conversation.</p>
+            <div id="chat-stream"></div>
         </div>
     </div>
-
+<p>idk who made ts it wasnt dougie tho dont blame him ok thanks</p>
     <script>
-        const chat = document.getElementById('chat');
-        const input = document.getElementById('input');
-        const sendBtn = document.getElementById('send');
-        const textInput = document.getElementById('text-input');
-        const humanizeBtn = document.getElementById('humanize-btn');
-        const humanizeLevel = document.getElementById('humanize-level');
-        const levelValue = document.getElementById('level-value');
-        const humanizedOutput = document.getElementById('humanized-output');
+        const chatStream = document.getElementById('chat-stream');
+        const chatInput = document.getElementById('chat-input');
+        const postBtn = document.getElementById('post-btn');
         let history = [];
 
-        humanizeLevel.oninput = (e) => {
-            levelValue.textContent = e.target.value;
-        };
-
         function getSystemPrompt(level = 5) {
-            const levels = {
-                1: "Write naturally and conversationally. Use some casual language and contractions.",
-                3: "Write like youre texting someone smart. Be casual, use contractions, mix up how you start sentences. Real but clear.",
-                5: "Talk like a real person writing an essay or explanation. Use contractions everywhere, vary your sentences a lot, add personality. Sometimes throw in a you know or honestly or actually. Dont be too polished, let it flow naturally. Use some sentence fragments where it feels right. Start some sentences with And or But. Be authentic.",
-                7: "Write exactly how someone would if they were typing their thoughts naturally. Super casual, tons of contractions, fragments, starting with conjunctions, using filler words like honestly actually you know what i mean. Mix long and short sentences randomly. Add personal asides. Rephrase things mid thought. Use rhetorical questions sometimes. Let the writing breathe and feel imperfect.",
-                10: "Maximum human style. Write like someone genuinely typing out their thoughts in real time with zero AI polish. Use tons of contractions, fragments everywhere, run ons, sentences starting with And But Or So. Throw in filler words naturally like honestly tbh actually you know i mean. Use casual phrasing, sometimes drop punctuation where it feels natural, mix up capitalization occasionally if it fits the vibe. Add tangents, backtrack on thoughts, use dashes and ellipses. Personal voice throughout. Make it messy and real and totally human. No perfect structure or AI patterns. Think stream of consciousness but coherent enough to follow."
+            return "You are a helpful assistant. Write clearly using simple language that an 8th grader would understand. Avoid complex vocabulary and keep sentences straightforward.";
+        }
+
+        function balancedHumanize(text, level) {
+            let result = text;
+
+            // Remove em dashes
+            result = result.replace(/—/g, "");
+            
+            // Word substitutions for natural variation
+            const subs = {
+                "can": "could",
+                "could": "can", 
+                "may": "might",
+                "just": "simply",
+                "really": "truly",
+                "actually": "in fact",
+                "that": "which",
+                "very": "extremely",
+                "demonstrates": "shows",
+                "utilizes": "uses",
+                "indicates": "suggests",
+                "illustrates": "shows",
+                "nevertheless": "but",
+                "furthermore": "also",
+                "moreover": "also",
+                "therefore": "so",
+                "thus": "so",
+                "hence": "so"
             };
 
-            const exactLevel = parseInt(level);
-            if (levels[exactLevel]) return levels[exactLevel];
-            return levels[5];
-        }
+            const conjunctions = ["And", "But", "Or", "So"];
 
-        function getHumanizePrompt(level) {
-            const basePrompt = `Rewrite this text to sound completely human written. Critical rules:
-
-1. ELIMINATE AI PATTERNS:
-   - No perfectly balanced sentences or parallel structures
-   - No overly smooth transitions
-   - No repeated sentence patterns (like starting multiple sentences the same way)
-   - No formulaic opening/closing statements
-   - Break up any rhythmic or sing-song quality
-   
-2. ADD HUMAN IMPERFECTIONS:
-   - Mix sentence lengths randomly (some very short, some running on)
-   - Use fragments where natural
-   - Start sentences with And, But, So, Or when it flows
-   - Add filler words: honestly, actually, like, you know, I mean, basically
-   - Include personal asides and tangents
-   - Use casual phrasing and contractions everywhere
-   - Throw in rhetorical questions
-   
-3. VARY STRUCTURE:
-   - No consistent paragraph lengths
-   - Break conventional grammar rules when it sounds more natural
-   - Use dashes, ellipses, parentheses for asides
-   - Mix formal and casual language within the same piece
-   - Let ideas flow messily rather than in perfect order
-   
-4. ADD VOICE:
-   - Include personal observations
-   - Show uncertainty or hedging (maybe, probably, I think, seems like)
-   - Use qualifiers and softeners
-   - Add emphasis naturally (really, super, totally)
-   - Let personality come through
-
-Level ${level} intensity. `;
-
-            if (level <= 3) {
-                return basePrompt + "Keep it mostly clear but add natural variations and break AI patterns.";
-            } else if (level <= 6) {
-                return basePrompt + "Make it genuinely conversational with noticeable human quirks and imperfections.";
-            } else {
-                return basePrompt + "Go maximum natural human style. Make it impossible to detect as AI. Add tons of natural imperfections, casual language, varied structure, personal voice. Think how someone actually writes, not how AI writes.";
-            }
-        }
-
-        function postProcessText(text, level) {
-            let result = text;
-            
-            // Remove common AI phrases
-            const aiPhrases = [
-                /\bIn conclusion,?\b/gi,
-                /\bIn summary,?\b/gi,
-                /\bTo summarize,?\b/gi,
-                /\bIt is important to note that\b/gi,
-                /\bIt should be noted that\b/gi,
-                /\bNotably,?\b/gi,
-                /\bCrucially,?\b/gi,
-                /\bSignificantly,?\b/gi,
-                /\bUltimately,?\b/gi,
-                /\bdelve into\b/gi,
-                /\bdelves into\b/gi,
-                /\btestament to\b/gi,
-                /\bIt is worth noting\b/gi,
-                /\bserves as a reminder\b/gi
-            ];
-
-            for (let phrase of aiPhrases) {
-                result = result.replace(phrase, '');
-            }
-
-            // Add contractions aggressively
-            const contractions = [
-                [/\bI am\b/g, "I'm"],
-                [/\byou are\b/g, "you're"],
-                [/\bwe are\b/g, "we're"],
-                [/\bthey are\b/g, "they're"],
-                [/\bhe is\b/g, "he's"],
-                [/\bshe is\b/g, "she's"],
-                [/\bit is\b/g, "it's"],
-                [/\bthat is\b/g, "that's"],
-                [/\bwho is\b/g, "who's"],
-                [/\bwhat is\b/g, "what's"],
-                [/\bdo not\b/g, "don't"],
-                [/\bdoes not\b/g, "doesn't"],
-                [/\bdid not\b/g, "didn't"],
-                [/\bcannot\b/g, "can't"],
-                [/\bcould not\b/g, "couldn't"],
-                [/\bwould not\b/g, "wouldn't"],
-                [/\bshould not\b/g, "shouldn't"],
-                [/\bwill not\b/g, "won't"],
-                [/\bhave not\b/g, "haven't"],
-                [/\bhas not\b/g, "hasn't"],
-                [/\bhad not\b/g, "hadn't"],
-                [/\bis not\b/g, "isn't"],
-                [/\bwas not\b/g, "wasn't"],
-                [/\bwere not\b/g, "weren't"],
-                [/\bI would\b/g, "I'd"],
-                [/\byou would\b/g, "you'd"],
-                [/\bhe would\b/g, "he'd"],
-                [/\bshe would\b/g, "she'd"],
-                [/\bwe would\b/g, "we'd"],
-                [/\bthey would\b/g, "they'd"],
-                [/\bI have\b/g, "I've"],
-                [/\byou have\b/g, "you've"],
-                [/\bwe have\b/g, "we've"],
-                [/\bthey have\b/g, "they've"],
-                [/\bwho have\b/g, "who've"]
-            ];
-
-            if (level >= 3) {
-                for (let [pattern, replacement] of contractions) {
-                    result = result.replace(pattern, replacement);
+            // Process word by word
+            result = result.split(" ").map(word => {
+                let clean = word.replace(/[^a-zA-Z]/g, "");
+                let lowerClean = clean.toLowerCase();
+                
+                // Apply substitutions
+                if (subs[lowerClean]) {
+                    word = word.replace(clean, subs[lowerClean]);
                 }
+
+                // Occasional capitalization changes (more at higher levels)
+                if (level >= 5 && Math.random() < 0.07) {
+                    word = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+                }
+
+                // Random small typos (only at high levels, keeps it readable)
+                if (level >= 8 && Math.random() < 0.03 && word.length > 3) {
+                    let i = Math.floor(Math.random() * (word.length - 1));
+                    word = word.slice(0, i) + word[i + 1] + word[i] + word.slice(i + 2);
+                }
+
+                // Rarely repeat letters at end (subtle humanization)
+                if (level >= 7 && Math.random() < 0.02 && word.length > 2) {
+                    word += word[word.length - 1];
+                }
+
+                return word;
+            }).join(" ");
+
+            // Randomly add/remove commas for natural flow
+            if (level >= 4) {
+                result = result.replace(/, /g, () => Math.random() < 0.5 ? ", " : " ");
             }
 
-            // Add filler words at higher levels
-            if (level >= 5) {
-                const sentences = result.split(/\. (?=[A-Z])/);
-                result = sentences.map((s, i) => {
-                    const rand = Math.random();
-                    if (rand > 0.7 && i > 0) {
-                        const fillers = ['honestly', 'actually', 'you know', 'i mean', 'like', 'basically', 'really', 'probably'];
-                        const filler = fillers[Math.floor(Math.random() * fillers.length)];
-                        return filler + ', ' + s.charAt(0).toLowerCase() + s.slice(1);
-                    } else if (rand > 0.85 && i > 0) {
-                        const starts = ['and ', 'but ', 'so '];
-                        const start = starts[Math.floor(Math.random() * starts.length)];
-                        return start + s.charAt(0).toLowerCase() + s.slice(1);
-                    }
-                    return s;
-                }).join('. ');
-            }
+            // Split into sentences
+            let sentences = result.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
 
-            // Vary punctuation at high levels
-            if (level >= 7) {
-                result = result.replace(/\. /g, () => {
-                    const rand = Math.random();
-                    if (rand > 0.85) return '... ';
-                    if (rand > 0.75) return ' - ';
-                    return '. ';
-                });
+            sentences = sentences.map(s => {
+                // Break long sentences
+                if (level >= 6 && s.length > 120 && Math.random() < 0.5) {
+                    let p = Math.floor(s.length / 2);
+                    s = s.slice(0, p) + ". " + s.slice(p);
+                }
 
-                // Occasionally lowercase after periods for casual feel
-                result = result.replace(/\. ([A-Z])/g, (match, letter) => {
-                    if (Math.random() > 0.9) {
-                        return '. ' + letter.toLowerCase();
-                    }
-                    return match;
-                });
-            }
+                // Random fillers
+                if (level >= 5 && Math.random() < 0.05) s = "Well, " + s;
+                if (level >= 6 && Math.random() < 0.03) s = s + " you know";
 
-            // Clean up extra spaces
-            result = result.replace(/ +/g, ' ').trim();
-            
-            return result;
+                // Occasionally add conjunction at start
+                if (level >= 4 && Math.random() < 0.05) {
+                    s = conjunctions[Math.floor(Math.random() * conjunctions.length)] + " " + s;
+                }
+
+                return s;
+            });
+
+            result = sentences.join(". ") + ".";
+
+            // Remove AI phrases
+            result = result.replace(/\b(In conclusion|In summary|To summarize|It is important to note that|Notably|Crucially|Significantly),?\s+/gi, '');
+
+            // Clean up spacing
+            result = result.replace(/\s+/g, ' ');
+            result = result.replace(/\s+\./g, '.');
+            result = result.replace(/\.+/g, '.');
+
+            return result.trim();
         }
 
         function buildPrompt(userMsg, level = 5) {
@@ -351,16 +328,16 @@ Level ${level} intensity. `;
             const div = document.createElement('div');
             div.className = `msg ${role}`;
             div.textContent = content;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
+            chatStream.appendChild(div);
+            chatStream.scrollTop = chatStream.scrollHeight;
         }
 
         async function sendMessage() {
-            const msg = input.value.trim();
+            const msg = chatInput.value.trim();
             if (!msg) return;
 
-            input.value = '';
-            sendBtn.disabled = true;
+            chatInput.value = '';
+            postBtn.disabled = true;
             addMessage('user', msg);
 
             try {
@@ -379,13 +356,13 @@ Level ${level} intensity. `;
                         addMessage('assistant', 'ok so basically you put sum in thats bad');
                         history.push({ role: 'user', content: msg });
                         history.push({ role: 'assistant', content: 'ok so basically you put sum in thats bad' });
-                        sendBtn.disabled = false;
-                        input.focus();
+                        postBtn.disabled = false;
+                        chatInput.focus();
                         return;
                     }
                 } catch (e) {}
                 
-                const humanized = postProcessText(data, 5);
+                const humanized = balancedHumanize(data, 5);
                 
                 history.push({ role: 'user', content: msg });
                 history.push({ role: 'assistant', content: humanized });
@@ -396,52 +373,14 @@ Level ${level} intensity. `;
                 addMessage('assistant', 'sorry that didnt work');
             }
 
-            sendBtn.disabled = false;
-            input.focus();
+            postBtn.disabled = false;
+            chatInput.focus();
         }
 
-        async function humanizeText() {
-            const text = textInput.value.trim();
-            if (!text) return;
-
-            humanizeBtn.disabled = true;
-            humanizedOutput.textContent = 'Processing...';
-
-            try {
-                const level = parseInt(humanizeLevel.value);
-                const prompt = getHumanizePrompt(level) + `\n\nOriginal text:\n${text}\n\nHumanized version:`;
-                const encodedPrompt = encodeURIComponent(prompt);
-                const seed = Math.floor(Math.random() * 1000000);
-                
-                const url = `https://text.pollinations.ai/${encodedPrompt}?seed=${seed}&model=openai`;
-                
-                const res = await fetch(url);
-                const data = await res.text();
-
-                try {
-                    const parsed = JSON.parse(data);
-                    if (parsed.refusal !== undefined && parsed.refusal !== null) {
-                        humanizedOutput.textContent = 'ok so basically you put sum in thats bad';
-                        humanizeBtn.disabled = false;
-                        return;
-                    }
-                } catch (e) {}
-                
-                const humanized = postProcessText(data, level);
-                humanizedOutput.textContent = humanized;
-
-            } catch (err) {
-                humanizedOutput.textContent = 'sorry that didnt work';
-            }
-
-            humanizeBtn.disabled = false;
-        }
-
-        sendBtn.onclick = sendMessage;
-        input.onkeypress = (e) => {
+        postBtn.onclick = sendMessage;
+        chatInput.onkeypress = (e) => {
             if (e.key === 'Enter') sendMessage();
         };
-        humanizeBtn.onclick = humanizeText;
     </script>
 </body>
 </html>
